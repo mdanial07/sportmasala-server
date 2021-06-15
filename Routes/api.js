@@ -1,11 +1,18 @@
 'use strict'
 
 const { Router } = require('express')
-const user = require('../Controllers/user_controller');
+const { AuthenticationController } = require('../Controllers/authentication_controller');
+
+const { requireAuth } = require('../Passport/passport');
 
 const router = new Router()
 
-//User
-router.get('/users', user.getUsers)
+// Authentication
+router.post('/authentication/signup', AuthenticationController.signUpWithCredentials)
+router.post('/authentication/login', AuthenticationController.loginWithCredentials)
+router.get('/authentication/auth', AuthenticationController.checkLogin)
+router.post('/authentication/verify', AuthenticationController.profileVerification)
+router.post('/authentication/resetpassword', requireAuth, AuthenticationController.resetPassword)
+
 
 module.exports = router

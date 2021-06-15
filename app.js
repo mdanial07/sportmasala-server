@@ -1,26 +1,23 @@
-'use strict'
-
-const express = require('express')
-const mongoose = require('mongoose')
+const express = require('express');
+const mongoose = require('mongoose');
+const path = require('path');
 const bodyParser = require('body-parser')
 const cors = require('cors')
 const config = require('./config')
-const api = require('./Routes/api');
+const routes = require('./Routes/api');
 
 const app = express()
 
-mongoose.connect(config.MONGO_CONNECTION_LOCAL, { useNewUrlParser: true, useFindAndModify: false }, (err) => {
+mongoose.connect(config.MONGO_CONNECTION, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+}, (err) => {
     if (err) {
         console.log("Mongo not connect, Error = ", err);
     } else {
         console.log("Mongo Connected")
     }
 })
-
-var whitelist = [
-    'http://localhost:8037',
-    'http://localhost:4000',
-]
 
 var corsOptionsDelegate = function (req, callback) {
     var corsOptions
@@ -32,13 +29,27 @@ var corsOptionsDelegate = function (req, callback) {
     callback(null, corsOptions)
 }
 
+
+app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'storage')));
+
 app.use(cors(corsOptionsDelegate))
 
 app.use(bodyParser.json({ limit: '50mb' }));
 app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
-app.use('/api', api)
-// app.use('/api/admin', admin)
-// app.use('/public', express.static(path.join(__dirname, '/public')))
+
+app.use('/api', routes)
+
+var whitelist = [
+    'http://localhost:6601',
+    'http://localhost:6610',
+    'https://ebooket.pk',
+    'https://server.ebooket.pk',
+    'https://portal.ebooket.pk',
+]
+
+app.use('/*', express.static(path.join(__dirname, 'public')));
+app.use('/*', express.static(path.join(__dirname, 'storage')));
 
 app.use((err, req, res, next) => {
     console.log(err.message)
