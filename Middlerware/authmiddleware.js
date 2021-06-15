@@ -14,7 +14,7 @@ class AuthMiddleware {
             exp: moment().add(2, 'days').unix()
         }
         console.log(payload)
-        return jwt.sign(payload, config.SECRET_TOKEN_PORTALS)
+        return jwt.sign(payload, config.SECRET_TOKEN)
     }
 
     /**
@@ -23,7 +23,7 @@ class AuthMiddleware {
      */
     static decodeJWT(token) {
         console.log(token)
-        return jwt.verify(token, config.SECRET_TOKEN_PORTALS)
+        return jwt.verify(token, config.SECRET_TOKEN)
     }
 }
 module.exports = { AuthMiddleware }

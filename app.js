@@ -41,11 +41,8 @@ app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 app.use('/api', routes)
 
 var whitelist = [
-    'http://localhost:6601',
-    'http://localhost:6610',
-    'https://ebooket.pk',
-    'https://server.ebooket.pk',
-    'https://portal.ebooket.pk',
+    'http://localhost:4401',
+    'http://localhost:4410',
 ]
 
 app.use('/*', express.static(path.join(__dirname, 'public')));

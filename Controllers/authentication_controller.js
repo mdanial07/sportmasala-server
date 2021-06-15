@@ -14,8 +14,7 @@ class AuthenticationController {
     static async signUpWithCredentials(req, res) {
         console.log(req.body)
         try {
-            let email = req.body.email
-            let user = await User.findOne({ email: email })
+            let user = await User.findOne({ email: req.body.email })
             if (user) { throw { code: 400, message: 'User already exist with same email' } } else {
                 let usermobile = await User.findOne({ mobileno: req.body.mobileno })
                 if (usermobile) { throw { code: 400, message: 'User already exist with same mobile' } } else {
@@ -25,19 +24,20 @@ class AuthenticationController {
                         lastname: req.body.lastname,
                         email: req.body.email,
                         mobileno: req.body.mobileno,
+                        gender: req.body.gender,
                         role: req.body.role,
                         platform: req.body.platform,
                         password: bcrypt.hashSync(req.body.password, 10)
                     })
                     await user.save()
-                    try {
-                        let emailVerificationLink = `${config.LIVE_PATH}verify?token=${emailVerificationToken}&user=${user._id}`
-                        let html = await PromiseEjs.renderFile('./Email/signup.ejs', { user: user, emailVerificationLink: emailVerificationLink, token: emailVerificationToken })
-                        await mailSender.sendMail(user.email, 'Welcome!!!!', html)
-                    } catch (error) {
-                        console.log(error)
-                    }
-                    let authToken = AuthMiddleware.createJWT(user, config.SECRET_TOKEN_PORTALS)
+                    // try {
+                    //     let emailVerificationLink = `${config.LIVE_PATH}verify?token=${emailVerificationToken}&user=${user._id}`
+                    //     let html = await PromiseEjs.renderFile('./Email/signup.ejs', { user: user, emailVerificationLink: emailVerificationLink, token: emailVerificationToken })
+                    //     await mailSender.sendMail(user.email, 'Welcome!!!!', html)
+                    // } catch (error) {
+                    //     console.log(error)
+                    // }
+                    let authToken = AuthMiddleware.createJWT(user, config.SECRET_TOKEN)
                     await User.findOneAndUpdate({ _id: user._id }, { $set: { authToken: authToken, password: bcrypt.hashSync(req.body.password, 10), token: emailVerificationToken } })
                     return new Response(res, { authToken: authToken })
                 }
@@ -55,7 +55,7 @@ class AuthenticationController {
             if (!user) { throw { code: 401, message: 'User does not exist' } } else {
                 if (!user.isEmailVerified) { throw { code: 401, message: 'Please check your email and verify your account' } } else {
                     if (!bcrypt.compareSync(password, user.password)) { throw { code: 401, message: 'Password is incorrect' } } else {
-                        let authToken = AuthMiddleware.createJWT(user, config.SECRET_TOKEN_PORTALS)
+                        let authToken = AuthMiddleware.createJWT(user, config.SECRET_TOKEN)
                         await User.findOneAndUpdate({ email: email }, { $set: { authToken: authToken } })
                         let obj = {
                             _id: user._id,
@@ -79,7 +79,7 @@ class AuthenticationController {
         try {
             let token = req.query.token
             console.log(req.query)
-            let decodedToken = AuthMiddleware.decodeJWT(token, config.SECRET_TOKEN_PORTALS)
+            let decodedToken = AuthMiddleware.decodeJWT(token, config.SECRET_TOKEN)
             let user = await User.findOne({ _id: decodedToken.sub, authToken: token })
             console.log(user)
             if (user == null) { throw { code: 401, message: 'Unauthorized' } } else return new Response(res, { authenticated: true })

@@ -3,13 +3,13 @@ const JwtStrategy = require('passport-jwt').Strategy;
 const { ExtractJwt } = require('passport-jwt');
 
 const { User } = require('../Schema/Users');
-const { SECRET_TOKEN_PORTALS } = require('../config');
+const { SECRET_TOKEN } = require('../config');
 
 
 // Setup Options for Jwt strategy
 const jwtOptions = {
   jwtFromRequest: ExtractJwt.fromHeader('authorization'),
-  secretOrKey: SECRET_TOKEN_PORTALS,
+  secretOrKey: SECRET_TOKEN,
 };
 
 // create jwt strategy for user authentication

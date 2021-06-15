@@ -18,6 +18,11 @@ let userSchema = new Schema({
     },
     email: {
         type: String,
+        required: true,
+        unique: true,
+    },
+    gender: {
+        type: String,
         required: true
     },
     password: {
