@@ -4,15 +4,15 @@ var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 
 var matches = new Schema({
-    team1: {
+    team1Id: {
         type: mongoose.Schema.Types.ObjectId,
         required: true
     },
-    team2: {
+    team2Id: {
         type: mongoose.Schema.Types.ObjectId,
         required: true
     },
-    week: {
+    weekId: {
         type: mongoose.Schema.Types.ObjectId,
         required: true
     },
