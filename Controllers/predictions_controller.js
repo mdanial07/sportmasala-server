@@ -12,9 +12,12 @@ class PredictionsController {
                 {
                     $project: {
                         _id: '$_id',
-                        name: '$name',
-                        endDate: '$endDate',
-                        startDate: '$startDate',
+                        weekId: '$weekId',
+                        matchId: '$matchId',
+                        userId: '$userId',
+                        team1score: '$team1score',
+                        team2score: '$team2score',
+                        points: '$points',
                         status: '$status',
                         createdAt: '$createdAt',
                     }

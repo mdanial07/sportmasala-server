@@ -27,6 +27,7 @@ class TeamsController {
                         createdAt: '$createdAt',
                     }
                 },
+                { $sort: { name: 1 } }
             ])
             return new Response(res, Teams)
         } catch (error) {

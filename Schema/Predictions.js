@@ -4,6 +4,10 @@ var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 
 var predictions = new Schema({
+    weekId: {
+        type: mongoose.Schema.Types.ObjectId,
+        required: true
+    },
     matchId: {
         type: mongoose.Schema.Types.ObjectId,
         required: true
@@ -22,7 +26,8 @@ var predictions = new Schema({
     },
     points: {
         type: Number,
-        required: null,
+        required: false,
+        default: 0,
     },
     status: {
         type: String,

@@ -17,18 +17,18 @@ var matches = new Schema({
         required: true
     },
     date: {
-        type: String,
+        type: Date,
         required: true,
     },
     time: {
         type: String,
         required: true,
     },
-    team1score: {
+    team1result: {
         type: Number,
         default: null,
     },
-    team2score: {
+    team2result: {
         type: Number,
         default: null,
     },

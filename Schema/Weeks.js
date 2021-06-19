@@ -7,6 +7,7 @@ var weeks = new Schema({
     name: {
         type: String,
         required: true,
+        unique: true,
     },
     startDate: {
         type: String,

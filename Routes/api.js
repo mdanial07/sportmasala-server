@@ -6,6 +6,7 @@ const { TeamsController } = require('../Controllers/teams_controller');
 const { WeeksController } = require('../Controllers/weeks_controller');
 const { MatchesController } = require('../Controllers/matches_controller');
 const { PredictionsController } = require('../Controllers/predictions_controller');
+const { DashboardController } = require('../Controllers/dashboard_controller');
 
 const { requireAuth } = require('../Passport/passport');
 
@@ -27,6 +28,8 @@ router.delete('/team', TeamsController.deleteTeam)
 
 //Weeks
 router.get('/weeks', WeeksController.getWeeks)
+router.get('/weekbydate', WeeksController.getWeekbyCurrentDate)
+router.get('/weekswithmatches', WeeksController.getWeekswithMatches)
 router.post('/week', WeeksController.addWeek)
 router.put('/week', WeeksController.editWeek)
 router.delete('/week', WeeksController.deleteWeek)
@@ -34,6 +37,7 @@ router.delete('/week', WeeksController.deleteWeek)
 //Matches
 router.get('/matches', MatchesController.getMatches)
 router.post('/match', MatchesController.addMatch)
+router.put('/matchresult', MatchesController.updateMatchwithResult)
 router.put('/match', MatchesController.editMatch)
 router.delete('/match', MatchesController.deleteMatch)
 
@@ -42,6 +46,9 @@ router.get('/predictions', PredictionsController.getPredictions)
 router.post('/prediction', PredictionsController.addPrediction)
 router.put('/prediction', PredictionsController.editPrediction)
 router.delete('/prediction', PredictionsController.deletePrediction)
+
+//Dashboard
+router.get('/weeklywinner', DashboardController.getWeeklyWinner)
 
 
 
