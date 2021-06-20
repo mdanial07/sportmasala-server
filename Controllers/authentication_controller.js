@@ -25,7 +25,6 @@ class AuthenticationController {
                         email: req.body.email,
                         mobileno: req.body.mobileno,
                         gender: req.body.gender,
-                        role: req.body.role,
                         platform: req.body.platform,
                         password: bcrypt.hashSync(req.body.password, 10)
                     })
@@ -63,7 +62,6 @@ class AuthenticationController {
                             email: user.email,
                             firstname: user.firstname,
                             lastname: user.lastname,
-                            role: user.role,
                         }
                         return new Response(res, obj)
                     }
@@ -78,7 +76,7 @@ class AuthenticationController {
     static async checkLogin(req, res) {
         try {
             let token = req.query.token
-            console.log(req.query)
+            console.log('req.query', req.query)
             let decodedToken = AuthMiddleware.decodeJWT(token, config.SECRET_TOKEN)
             let user = await User.findOne({ _id: decodedToken.sub, authToken: token })
             console.log(user)

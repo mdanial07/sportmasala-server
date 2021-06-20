@@ -3,6 +3,7 @@
 var mongoose = require('mongoose');
 const multer = require('multer')
 const { Team } = require('../Schema/Teams')
+const { TeamStats } = require('../Schema/TeamStats')
 const { ErrorHandler } = require('../utils/ErrorHandler');
 const { Response } = require('../utils/Response');
 const config = require('./../config')
@@ -11,11 +12,19 @@ class TeamsController {
     static async getTeams(req, res) {
         try {
             console.log(req.query.name)
-            let obj = req.query.name != 'all' ? { categoryId: mongoose.Types.ObjectId(req.query.categoryId), status: 'active' } : { status: 'active' }
             let Teams = await Team.aggregate([
                 {
                     $match: { status: 'active' }
                 }, {
+                    $lookup: {
+                        from: 'teamstats',
+                        localField: '_id',
+                        foreignField: 'teamId',
+                        as: 'stats'
+                    }
+                },
+                { $unwind: { path: "$stats", preserveNullAndEmptyArrays: true } },
+                {
                     $project: {
                         _id: '$_id',
                         name: '$name',
@@ -25,9 +34,18 @@ class TeamsController {
                         capacity: '$capacity',
                         status: '$status',
                         createdAt: '$createdAt',
+                        stats: {
+                            points: '$stats.points',
+                            played: '$stats.played',
+                            won: '$stats.won',
+                            lost: '$stats.lost',
+                            draw: '$stats.draw',
+                        }
                     }
                 },
-                { $sort: { name: 1 } }
+                // { $sort: { stats.points: -1 } },
+                { $sort: { "stats.points": -1 } },
+                { $limit: 20 }
             ])
             return new Response(res, Teams)
         } catch (error) {
@@ -76,6 +94,11 @@ class TeamsController {
                             image: url,
                         })
                         await category.save()
+
+                        let stats = new TeamStats({
+                            teamId: category._id,
+                        })
+                        await stats.save()
                         return new Response(res, { success: true }, `Added Successfully`)
                     } catch (error) {
                         ErrorHandler.sendError(res, error)
@@ -146,6 +169,22 @@ class TeamsController {
                     ErrorHandler.sendError(res, reject)
                 }
             })
+        } catch (error) {
+            ErrorHandler.sendError(res, error)
+        }
+    }
+
+    static async addTeamStats(req, res) {
+        try {
+            let teamStatsExist = await TeamStats.findOne({ teamId: req.body.teamId })
+            console.log(teamStatsExist)
+            if (teamStatsExist) { throw { code: 401, message: 'Stats already exist' } } else {
+                let stats = new TeamStats({
+                    teamId: req.body.teamId
+                })
+                await stats.save()
+                return new Response(res, { success: true }, `Added Successfully`)
+            }
         } catch (error) {
             ErrorHandler.sendError(res, error)
         }

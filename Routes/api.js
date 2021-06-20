@@ -23,33 +23,34 @@ router.post('/authentication/resetpassword', requireAuth, AuthenticationControll
 //Teams
 router.get('/teams', TeamsController.getTeams)
 router.post('/team', TeamsController.addTeam)
-router.put('/team', TeamsController.editTeam)
-router.delete('/team', TeamsController.deleteTeam)
+router.post('/teamstats', TeamsController.addTeamStats)
+router.put('/team', requireAuth, TeamsController.editTeam)
+router.delete('/team', requireAuth, TeamsController.deleteTeam)
 
 //Weeks
-router.get('/weeks', WeeksController.getWeeks)
-router.get('/weekbydate', WeeksController.getWeekbyCurrentDate)
-router.get('/weekswithmatches', WeeksController.getWeekswithMatches)
-router.post('/week', WeeksController.addWeek)
-router.put('/week', WeeksController.editWeek)
-router.delete('/week', WeeksController.deleteWeek)
+router.get('/weeks', requireAuth, WeeksController.getWeeks)
+router.get('/weekbydate', requireAuth, WeeksController.getWeekbyCurrentDate)
+router.get('/weekswithmatches', requireAuth, WeeksController.getWeekswithMatches)
+router.post('/week', requireAuth, WeeksController.addWeek)
+router.put('/week', requireAuth, WeeksController.editWeek)
+router.delete('/week', requireAuth, WeeksController.deleteWeek)
 
 //Matches
-router.get('/matches', MatchesController.getMatches)
-router.post('/match', MatchesController.addMatch)
+router.get('/matches', requireAuth, MatchesController.getMatches)
+router.post('/match', requireAuth, MatchesController.addMatch)
 router.put('/matchresult', MatchesController.updateMatchwithResult)
-router.put('/match', MatchesController.editMatch)
-router.delete('/match', MatchesController.deleteMatch)
+router.put('/match', requireAuth, MatchesController.editMatch)
+router.delete('/match', requireAuth, MatchesController.deleteMatch)
 
 //Predictions
-router.get('/predictions', PredictionsController.getPredictions)
-router.post('/prediction', PredictionsController.addPrediction)
-router.put('/prediction', PredictionsController.editPrediction)
-router.delete('/prediction', PredictionsController.deletePrediction)
+router.get('/predictions', requireAuth, PredictionsController.getPredictions)
+router.post('/prediction', requireAuth, PredictionsController.addPrediction)
+router.put('/prediction', requireAuth, PredictionsController.editPrediction)
+router.delete('/prediction', requireAuth, PredictionsController.deletePrediction)
 
 //Dashboard
-router.get('/weeklywinner', DashboardController.getWeeklyWinner)
-
+router.get('/weeklywinner', requireAuth, DashboardController.getWeeklyWinner)
+router.get('/yearlywinner', requireAuth, DashboardController.getYearlyWinner)
 
 
 

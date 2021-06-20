@@ -2,6 +2,7 @@
 
 var mongoose = require('mongoose');
 const { Prediction } = require('../Schema/Predictions')
+const { Match } = require('../Schema/Matches')
 const { ErrorHandler } = require('../utils/ErrorHandler');
 const { Response } = require('../utils/Response');
 
@@ -32,13 +33,19 @@ class PredictionsController {
     static async addPrediction(req, res) {
         try {
 
-            let predictionExist = await Prediction.findOne({ matchId: req.body.matchId, userId: req.body.userId })
-            if (predictionExist) { throw { code: 400, message: 'User already predic for this match' } } else {
-                let prediction = new Prediction({
-                    ...req.body,
-                })
-                await prediction.save()
-                return new Response(res, { success: true }, `Added Successfully`)
+            let matchExist = await Match.findOne({ _id: req.body.matchId })
+            if (matchExist.status != 'pending') { throw { code: 400, message: 'Prediction time is over becuase match has been started' } } else {
+                let predictionExist = await Prediction.findOne({ matchId: req.body.matchId, userId: req.body.userId })
+                if (predictionExist) {
+                    await Prediction.findOneAndUpdate({ _id: predictionExist._id }, { $set: req.body })
+                    return new Response(res, { success: true }, `Update Successfully`)
+                } else {
+                    let prediction = new Prediction({
+                        ...req.body,
+                    })
+                    await prediction.save()
+                    return new Response(res, { success: true }, `Added Successfully`)
+                }
             }
         } catch (error) {
             ErrorHandler.sendError(res, error)

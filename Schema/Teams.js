@@ -25,10 +25,6 @@ var teams = new Schema({
         type: Number,
         required: true,
     },
-    status: {
-        type: String,
-        default: 'active'
-    },
 }, {
     timestamps: true
 })

@@ -2,6 +2,8 @@
 
 var mongoose = require('mongoose');
 const { Match } = require('../Schema/Matches')
+const { Team } = require('../Schema/Teams')
+const { TeamStats } = require('../Schema/TeamStats')
 const { Prediction } = require('../Schema/Predictions')
 const { ErrorHandler } = require('../utils/ErrorHandler');
 const { Response } = require('../utils/Response');
@@ -99,7 +101,6 @@ class MatchesController {
         }
     }
 
-
     /*
     Correct Results 40 points
     Correct Goals 20  points
@@ -150,11 +151,22 @@ class MatchesController {
 
                     })
                 }
-
                 await Match.findOneAndUpdate({ _id: matchExist._id }, { $set: { team1result: Number(req.body.team1result), team2result: Number(req.body.team2result), status: 'completed' } })
+                let team1StatsExist = await TeamStats.findOne({ teamId: mongoose.Types.ObjectId(matchExist.team1Id) })
+                let team2StatsExist = await TeamStats.findOne({ teamId: mongoose.Types.ObjectId(matchExist.team2Id) })
+
+                if (correctResultTeam1 == correctResultTeam2) {
+                    await TeamStats.findOneAndUpdate({ _id: team1StatsExist._id }, { $set: { points: Number(team1StatsExist.points) + 1, draw: Number(team1StatsExist.draw) + 1, played: Number(team1StatsExist.played) + 1 } })
+                    await TeamStats.findOneAndUpdate({ _id: team2StatsExist._id }, { $set: { points: Number(team2StatsExist.points) + 1, draw: Number(team2StatsExist.draw) + 1, played: Number(team1StatsExist.played) + 1 } })
+                } else if (correctResultTeam1 > correctResultTeam2) {
+                    await TeamStats.findOneAndUpdate({ _id: team1StatsExist._id }, { $set: { points: Number(team1StatsExist.points) + 3, won: Number(team1StatsExist.won) + 1, played: Number(team1StatsExist.played) + 1 } })
+                    await TeamStats.findOneAndUpdate({ _id: team2StatsExist._id }, { $set: { lost: Number(team2StatsExist.lost) + 1, played: Number(team1StatsExist.played) + 1 } })
+                } else if (correctResultTeam1 < correctResultTeam2) {
+                    await TeamStats.findOneAndUpdate({ _id: team1StatsExist._id }, { $set: { lost: Number(team1StatsExist.lost) + 1, played: Number(team1StatsExist.played) + 1 } })
+                    await TeamStats.findOneAndUpdate({ _id: team2StatsExist._id }, { $set: { points: Number(team2StatsExist.points) + 3, won: Number(team2StatsExist.won) + 1, played: Number(team1StatsExist.played) + 1 } })
+                }
             }
 
-            // await Match.findOneAndUpdate({ _id: matchExist._id }, { $set: req.body })
             return new Response(res, { success: true }, 'Update Successfully')
         } catch (error) {
             ErrorHandler.sendError(res, error)
