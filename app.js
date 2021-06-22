@@ -42,8 +42,8 @@ app.use('/api', routes)
 
 var whitelist = [
     'http://localhost:4401',
-    'http://localhost:1101',
     'http://localhost:4410',
+    'https://sports.jenzo.store',
 ]
 
 app.use('/*', express.static(path.join(__dirname, 'public')));
