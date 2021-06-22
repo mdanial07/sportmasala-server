@@ -2,6 +2,8 @@
 
 const { Router } = require('express')
 const { AuthenticationController } = require('../Controllers/authentication_controller');
+const { LeaguesController } = require('../Controllers/league_controller');
+const { SeasonsController } = require('../Controllers/seasons_controller');
 const { TeamsController } = require('../Controllers/teams_controller');
 const { WeeksController } = require('../Controllers/weeks_controller');
 const { MatchesController } = require('../Controllers/matches_controller');
@@ -19,6 +21,17 @@ router.get('/authentication/auth', AuthenticationController.checkLogin)
 router.post('/authentication/verify', AuthenticationController.profileVerification)
 router.post('/authentication/resetpassword', requireAuth, AuthenticationController.resetPassword)
 
+//Leagues
+router.get('/leagues', LeaguesController.getLeagues)
+router.post('/league', LeaguesController.addLeague)
+router.put('/league', requireAuth, LeaguesController.editLeague)
+router.delete('/league', requireAuth, LeaguesController.deleteLeague)
+
+//Seasons
+router.get('/seasons', SeasonsController.getSeasons)
+router.post('/season', SeasonsController.addSeason)
+router.put('/season', requireAuth, SeasonsController.editSeason)
+router.delete('/season', requireAuth, SeasonsController.deleteSeason)
 
 //Teams
 router.get('/teams', TeamsController.getTeams)

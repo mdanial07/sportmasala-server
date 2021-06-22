@@ -4,6 +4,14 @@ var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 
 var weeks = new Schema({
+    leagueId: {
+        type: mongoose.Schema.Types.ObjectId,
+        required: true
+    },
+    seasonId: {
+        type: mongoose.Schema.Types.ObjectId,
+        required: true
+    },
     name: {
         type: String,
         required: true,

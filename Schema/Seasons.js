@@ -3,12 +3,8 @@
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 
-var teams = new Schema({
+var seasons = new Schema({
     leagueId: {
-        type: mongoose.Schema.Types.ObjectId,
-        required: true
-    },
-    seasonId: {
         type: mongoose.Schema.Types.ObjectId,
         required: true
     },
@@ -17,24 +13,20 @@ var teams = new Schema({
         required: true,
         unique: true
     },
-    image: {
+    startDate: {
         type: String,
         required: true,
     },
-    shortname: {
+    endDate: {
         type: String,
         required: true,
     },
-    stadium: {
+    status: {
         type: String,
-        required: true,
-    },
-    capacity: {
-        type: Number,
-        required: true,
+        default: 'pending'
     },
 }, {
     timestamps: true
 })
-let Team = mongoose.model('teams', teams);
-module.exports = { Team }
+let Season = mongoose.model('seasons', seasons);
+module.exports = { Season }
