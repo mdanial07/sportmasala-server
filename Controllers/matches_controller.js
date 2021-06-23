@@ -147,7 +147,7 @@ class MatchesController {
                             Score += 20
                         }
                         console.log('Score', Score)
-                        await Prediction.findOneAndUpdate({ _id: predic._id }, { $set: { points: Score } })
+                        await Prediction.findOneAndUpdate({ _id: predic._id }, { $set: { points: Score, status: 'completed' } })
 
                     })
                 }

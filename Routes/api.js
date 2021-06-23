@@ -9,6 +9,7 @@ const { WeeksController } = require('../Controllers/weeks_controller');
 const { MatchesController } = require('../Controllers/matches_controller');
 const { PredictionsController } = require('../Controllers/predictions_controller');
 const { DashboardController } = require('../Controllers/dashboard_controller');
+const { SeedsController } = require('../Controllers/seeds_controller');
 
 const { requireAuth } = require('../Passport/passport');
 
@@ -64,6 +65,12 @@ router.delete('/prediction', requireAuth, PredictionsController.deletePrediction
 //Dashboard
 router.get('/weeklywinner', requireAuth, DashboardController.getWeeklyWinner)
 router.get('/yearlywinner', requireAuth, DashboardController.getYearlyWinner)
+router.get('/user-widgets', requireAuth, DashboardController.getUserWidgetsPoints)
+
+//Seeds Clean Data
+// router.get('/clear-team-stats', SeedsController.clearTeamStats)
+// router.get('/clear-matches-score', SeedsController.clearMatchesScore)
+// router.get('/clear-prediction-points', SeedsController.clearPredictionsPoints)
 
 
 
