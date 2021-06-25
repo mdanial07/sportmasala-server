@@ -10,11 +10,13 @@ class LeaguesController {
         try {
             let league = await League.aggregate([
                 {
+                    $match: { status: 'active' }
+                }, {
                     $project: {
                         _id: '$_id',
                         name: '$name',
                         status: '$status',
-                        createdAt: '$createdAt',
+                        // createdAt: '$createdAt',
                     }
                 },
             ])

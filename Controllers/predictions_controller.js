@@ -3,6 +3,7 @@
 var mongoose = require('mongoose');
 const { Prediction } = require('../Schema/Predictions')
 const { Match } = require('../Schema/Matches')
+const { Week } = require('../Schema/Weeks')
 const { ErrorHandler } = require('../utils/ErrorHandler');
 const { Response } = require('../utils/Response');
 
@@ -33,6 +34,8 @@ class PredictionsController {
     static async addPrediction(req, res) {
         try {
 
+            let weekExist = await Week.findOne({ _id: req.body.weekId })
+
             let matchExist = await Match.findOne({ _id: req.body.matchId })
             if (matchExist.status != 'pending') { throw { code: 400, message: 'Prediction time is over becuase match has been started' } } else {
                 let predictionExist = await Prediction.findOne({ matchId: req.body.matchId, userId: req.body.userId })
@@ -42,6 +45,8 @@ class PredictionsController {
                 } else {
                     let prediction = new Prediction({
                         ...req.body,
+                        leagueId: weekExist.leagueId,
+                        seasonId: weekExist.seasonId,
                     })
                     await prediction.save()
                     return new Response(res, { success: true }, `Added Successfully`)

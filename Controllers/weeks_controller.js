@@ -2,6 +2,7 @@
 
 var mongoose = require('mongoose');
 const { Week } = require('../Schema/Weeks')
+const { Season } = require('../Schema/Seasons')
 const { ErrorHandler } = require('../utils/ErrorHandler');
 const { Response } = require('../utils/Response');
 const config = require('./../config')
@@ -9,7 +10,13 @@ const config = require('./../config')
 class WeeksController {
     static async getWeeks(req, res) {
         try {
+            let activeSeason = await Season.find({ leagueId: mongoose.Types.ObjectId(req.query.leagueId), status: 'active' })
+            console.log(activeSeason)
+
             let week = await Week.aggregate([
+                {
+                    $match: { seasonId: mongoose.Types.ObjectId(activeSeason[0]._id), status: 'active' }
+                },
                 {
                     $project: {
                         _id: '$_id',
@@ -30,7 +37,13 @@ class WeeksController {
 
     static async getWeekswithMatches(req, res) {
         try {
+            console.log(req.query.leagueId)
+            let activeSeason = await Season.find({ leagueId: mongoose.Types.ObjectId(req.query.leagueId), status: 'active' })
+            console.log('activeSeason', activeSeason)
             let week = await Week.aggregate([
+                {
+                    $match: { seasonId: mongoose.Types.ObjectId(activeSeason[0]._id), status: 'active' }
+                },
                 {
                     $lookup: {
                         from: 'matches',
@@ -128,9 +141,13 @@ class WeeksController {
 
     static async getWeekbyCurrentDate(req, res) {
         try {
+            console.log(req.query.leagueId)
+            let activeSeason = await Season.find({ leagueId: mongoose.Types.ObjectId(req.query.leagueId), status: 'active' })
+            console.log('activeSeason', activeSeason)
+
             let week = await Week.aggregate([
                 {
-                    $match: { startDate: { $lt: req.query.date }, endDate: { $gt: req.query.date } }
+                    $match: { startDate: { $lt: req.query.date }, endDate: { $gt: req.query.date }, seasonId: mongoose.Types.ObjectId(activeSeason[0]._id), status: 'active' }
                 },
                 {
                     $project: {
@@ -143,7 +160,7 @@ class WeeksController {
                     }
                 },
             ])
-            return new Response(res, week[0])
+            return new Response(res, week)
         } catch (error) {
             ErrorHandler.sendError(res, error)
         }

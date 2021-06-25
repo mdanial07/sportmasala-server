@@ -1,10 +1,12 @@
 'use strict'
 
+var mongoose = require('mongoose');
 const bcrypt = require('bcryptjs')
 const { PromiseEjs } = require('../utils/PromiseEjs')
 const { mailSender } = require('./../utils/MailSender')
 const { ErrorHandler } = require('../utils/ErrorHandler')
 const { Response } = require('../utils/Response')
+const { League } = require('../Schema/League')
 const { User } = require('../Schema/Users')
 const { v4: uuidv4 } = require('uuid')
 const config = require('./../config')
@@ -56,14 +58,19 @@ class AuthenticationController {
                     if (!bcrypt.compareSync(password, user.password)) { throw { code: 401, message: 'Password is incorrect' } } else {
                         let authToken = AuthMiddleware.createJWT(user, config.SECRET_TOKEN)
                         await User.findOneAndUpdate({ email: email }, { $set: { authToken: authToken } })
-                        let obj = {
-                            _id: user._id,
-                            authToken: authToken,
-                            email: user.email,
-                            firstname: user.firstname,
-                            lastname: user.lastname,
+                        let leagueExist = await League.findOne({ _id: mongoose.Types.ObjectId(req.body.leagueId) })
+                        console.log(leagueExist)
+                        if (!leagueExist) { throw { code: 401, message: `League Doesn't Exist` } } else {
+                            let obj = {
+                                _id: user._id,
+                                authToken: authToken,
+                                email: user.email,
+                                firstname: user.firstname,
+                                lastname: user.lastname,
+                                leagueId: leagueExist._id
+                            }
+                            return new Response(res, obj)
                         }
-                        return new Response(res, obj)
                     }
                 }
             }

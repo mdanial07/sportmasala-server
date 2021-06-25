@@ -12,33 +12,38 @@ class DashboardController {
     static async getWeeklyWinner(req, res) {
         try {
             let week = await Week.find({ status: 'completed' }).sort({ createdAt: -1 }).limit(1)
-            let Winners = await Prediction.aggregate([
-                {
-                    $match: { weekId: mongoose.Types.ObjectId(week[0]._id) }
-                },
-                {
-                    $lookup: {
-                        from: 'users',
-                        localField: 'userId',
-                        foreignField: '_id',
-                        as: 'user'
-                    }
-                },
-                { $unwind: { path: "$user", preserveNullAndEmptyArrays: true } },
-                {
-                    $group: {
-                        _id: '$userId',
-                        total: { $sum: '$points' },
-                        matchId: { "$first": "$matchId" },
-                        firstname: { "$first": "$user.firstname" },
-                        lastname: { "$first": "$user.lastname" },
-                    }
-                },
+            console.log('week', week)
+            if (week.length > 0) {
+                let Winners = await Prediction.aggregate([
+                    {
+                        $match: { weekId: mongoose.Types.ObjectId(week[0]._id) }
+                    },
+                    {
+                        $lookup: {
+                            from: 'users',
+                            localField: 'userId',
+                            foreignField: '_id',
+                            as: 'user'
+                        }
+                    },
+                    { $unwind: { path: "$user", preserveNullAndEmptyArrays: true } },
+                    {
+                        $group: {
+                            _id: '$userId',
+                            total: { $sum: '$points' },
+                            matchId: { "$first": "$matchId" },
+                            firstname: { "$first": "$user.firstname" },
+                            lastname: { "$first": "$user.lastname" },
+                        }
+                    },
 
-                { $sort: { total: -1 } },
-                { $limit: 3 }
-            ])
-            return new Response(res, Winners)
+                    { $sort: { total: -1 } },
+                    { $limit: 3 }
+                ])
+                return new Response(res, Winners)
+            } else {
+                return new Response(res, [])
+            }
         } catch (error) {
             ErrorHandler.sendError(res, error)
         }
@@ -90,17 +95,19 @@ class DashboardController {
                     }
                 },
             ])
-
-            let UserWeeklyPoints = await Prediction.aggregate([
-                {
-                    $match: { userId: mongoose.Types.ObjectId(req.query.userId), weekId: mongoose.Types.ObjectId(week[0]._id) }
-                }, {
-                    $group: {
-                        _id: '$userId',
-                        total: { $sum: '$points' },
-                    }
-                },
-            ])
+            let UserWeeklyPoints = [];
+            if (week.length > 0) {
+                UserWeeklyPoints = await Prediction.aggregate([
+                    {
+                        $match: { userId: mongoose.Types.ObjectId(req.query.userId), weekId: mongoose.Types.ObjectId(week[0]._id) }
+                    }, {
+                        $group: {
+                            _id: '$userId',
+                            total: { $sum: '$points' },
+                        }
+                    },
+                ])
+            }
             console.log(UserWeeklyPoints)
             let obj = {
                 yearly: UserYearlyPoints.length > 0 ? UserYearlyPoints[0].total : 0,

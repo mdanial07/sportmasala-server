@@ -68,9 +68,10 @@ router.get('/yearlywinner', requireAuth, DashboardController.getYearlyWinner)
 router.get('/user-widgets', requireAuth, DashboardController.getUserWidgetsPoints)
 
 //Seeds Clean Data
-// router.get('/clear-team-stats', SeedsController.clearTeamStats)
-// router.get('/clear-matches-score', SeedsController.clearMatchesScore)
-// router.get('/clear-prediction-points', SeedsController.clearPredictionsPoints)
+router.get('/clear-team-stats', SeedsController.clearTeamStats)
+router.get('/clear-matches-score', SeedsController.clearMatchesScore)
+router.get('/clear-prediction-points', SeedsController.clearPredictionsPoints)
+router.get('/add-seasonId-to-teams', SeedsController.addSeasonIdTeams)
 
 
 

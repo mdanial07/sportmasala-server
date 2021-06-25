@@ -3,6 +3,7 @@
 var mongoose = require('mongoose');
 const multer = require('multer')
 const { Team } = require('../Schema/Teams')
+const { Season } = require('../Schema/Seasons')
 const { TeamStats } = require('../Schema/TeamStats')
 const { ErrorHandler } = require('../utils/ErrorHandler');
 const { Response } = require('../utils/Response');
@@ -11,11 +12,22 @@ const config = require('./../config')
 class TeamsController {
     static async getTeams(req, res) {
         try {
-            console.log(req.query.name)
+            console.log('req.query', req.query)
+            let activeSeason = await Season.find({ leagueId: mongoose.Types.ObjectId(req.query.leagueId), status: 'active' })
+            console.log('activeSeason', activeSeason)
+
             let Teams = await Team.aggregate([
                 {
-                    $match: { status: 'active' }
+                    $match: { seasonId: mongoose.Types.ObjectId(activeSeason[0]._id) }
                 }, {
+                    $lookup: {
+                        from: 'seasons',
+                        localField: 'seasonId',
+                        foreignField: '_id',
+                        as: 'season'
+                    }
+                },
+                {
                     $lookup: {
                         from: 'teamstats',
                         localField: '_id',
@@ -23,6 +35,7 @@ class TeamsController {
                         as: 'stats'
                     }
                 },
+                { $unwind: { path: "$season", preserveNullAndEmptyArrays: true } },
                 { $unwind: { path: "$stats", preserveNullAndEmptyArrays: true } },
                 {
                     $project: {
@@ -40,10 +53,14 @@ class TeamsController {
                             won: '$stats.won',
                             lost: '$stats.lost',
                             draw: '$stats.draw',
+                        },
+                        season: {
+                            name: '$season.name',
+                            startDate: '$season.startDate',
+                            endDate: '$season.endDate',
                         }
                     }
                 },
-                // { $sort: { stats.points: -1 } },
                 { $sort: { "stats.points": -1 } },
                 { $limit: 20 }
             ])

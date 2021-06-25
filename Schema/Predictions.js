@@ -4,6 +4,14 @@ var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 
 var predictions = new Schema({
+    leagueId: {
+        type: mongoose.Schema.Types.ObjectId,
+        required: true
+    },
+    seasonId: {
+        type: mongoose.Schema.Types.ObjectId,
+        required: true
+    },
     weekId: {
         type: mongoose.Schema.Types.ObjectId,
         required: true

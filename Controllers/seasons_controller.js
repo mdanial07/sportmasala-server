@@ -27,7 +27,10 @@ class SeasonsController {
     static async addSeason(req, res) {
         try {
             let season = await Season({
-                ...req.body
+                leagueId: req.body.leagueId,
+                name: req.body.name,
+                startDate: new Date(req.body.startDate),
+                endDate: new Date(req.body.endDate),
             })
             await season.save()
             return new Response(res, { success: true }, 'Added Successfully')

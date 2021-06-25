@@ -3,6 +3,8 @@
 var mongoose = require('mongoose');
 const { Match } = require('../Schema/Matches')
 const { TeamStats } = require('../Schema/TeamStats')
+const { Team } = require('../Schema/Teams')
+const { Week } = require('../Schema/Weeks')
 const { Prediction } = require('../Schema/Predictions')
 const { ErrorHandler } = require('../utils/ErrorHandler');
 const { Response } = require('../utils/Response');
@@ -20,6 +22,22 @@ class SeedsController {
             })
 
             return new Response(res, Stats)
+        } catch (error) {
+            ErrorHandler.sendError(res, error)
+        }
+    }
+
+    static async addSeasonIdTeams(req, res) {
+        try {
+            let WeeksList = await Week.find({})
+            console.log(WeeksList)
+
+            await WeeksList.map(async sts => {
+                let obj = { points: 0, played: 0, won: 0, lost: 0, draw: 0 }
+                await Week.findOneAndUpdate({ _id: sts._id }, { $set: { ...obj, leagueId: '60d0903f13745e4c94240d51', seasonId: '60d4fcc14826393068898408' } })
+            })
+
+            return new Response(res, WeeksList)
         } catch (error) {
             ErrorHandler.sendError(res, error)
         }

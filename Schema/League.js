@@ -13,6 +13,10 @@ var leagues = new Schema({
         type: Boolean,
         default: true
     },
+    type: {
+        type: String,
+        required: true,
+    },
     status: {
         type: String,
         default: 'active'
