@@ -3,6 +3,7 @@
 var mongoose = require('mongoose');
 const { Team } = require('../Schema/Teams')
 const { Week } = require('../Schema/Weeks')
+const { Season } = require('../Schema/Seasons')
 const { Prediction } = require('../Schema/Predictions')
 const { ErrorHandler } = require('../utils/ErrorHandler');
 const { Response } = require('../utils/Response');
@@ -12,11 +13,12 @@ class DashboardController {
     static async getWeeklyWinner(req, res) {
         try {
             let week = await Week.find({ status: 'completed' }).sort({ createdAt: -1 }).limit(1)
-            console.log('week', week)
+            let activeSeason = await Season.find({ leagueId: mongoose.Types.ObjectId(req.query.leagueId), status: 'active' })
+
             if (week.length > 0) {
                 let Winners = await Prediction.aggregate([
                     {
-                        $match: { weekId: mongoose.Types.ObjectId(week[0]._id) }
+                        $match: { weekId: mongoose.Types.ObjectId(week[0]._id), seasonId: mongoose.Types.ObjectId(activeSeason[0]._id), }
                     },
                     {
                         $lookup: {
@@ -85,9 +87,11 @@ class DashboardController {
         try {
             console.log(req.query.userId)
             let week = await Week.find({ status: 'completed' }).sort({ createdAt: -1 }).limit(1)
+            let activeSeason = await Season.find({ leagueId: mongoose.Types.ObjectId(req.query.leagueId), status: 'active' })
+
             let UserYearlyPoints = await Prediction.aggregate([
                 {
-                    $match: { userId: mongoose.Types.ObjectId(req.query.userId) }
+                    $match: { userId: mongoose.Types.ObjectId(req.query.userId), seasonId: mongoose.Types.ObjectId(activeSeason[0]._id) }
                 }, {
                     $group: {
                         _id: '$userId',
@@ -99,8 +103,11 @@ class DashboardController {
             if (week.length > 0) {
                 UserWeeklyPoints = await Prediction.aggregate([
                     {
-                        $match: { userId: mongoose.Types.ObjectId(req.query.userId), weekId: mongoose.Types.ObjectId(week[0]._id) }
-                    }, {
+                        $match: {
+                            userId: mongoose.Types.ObjectId(req.query.userId), seasonId: mongoose.Types.ObjectId(activeSeason[0]._id), weekId: mongoose.Types.ObjectId(week[0]._id)
+                        }
+                    },
+                    {
                         $group: {
                             _id: '$userId',
                             total: { $sum: '$points' },

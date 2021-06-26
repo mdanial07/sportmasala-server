@@ -37,12 +37,10 @@ class WeeksController {
 
     static async getWeekswithMatches(req, res) {
         try {
-            console.log(req.query.leagueId)
             let activeSeason = await Season.find({ leagueId: mongoose.Types.ObjectId(req.query.leagueId), status: 'active' })
-            console.log('activeSeason', activeSeason)
             let week = await Week.aggregate([
                 {
-                    $match: { seasonId: mongoose.Types.ObjectId(activeSeason[0]._id), status: 'active' }
+                    $match: { seasonId: mongoose.Types.ObjectId(activeSeason[0]._id), status: { $in: ['active', 'completed'] } }
                 },
                 {
                     $lookup: {
