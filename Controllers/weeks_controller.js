@@ -10,25 +10,28 @@ const config = require('./../config')
 class WeeksController {
     static async getWeeks(req, res) {
         try {
-            let activeSeason = await Season.find({ leagueId: mongoose.Types.ObjectId(req.query.leagueId), status: 'active' })
+            let activeSeason = await Season.findOne({ leagueId: mongoose.Types.ObjectId(req.query.leagueId), status: 'active' })
             console.log(activeSeason)
 
-            let week = await Week.aggregate([
-                {
-                    $match: { seasonId: mongoose.Types.ObjectId(activeSeason[0]._id), status: 'active' }
-                },
-                {
-                    $project: {
-                        _id: '$_id',
-                        name: '$name',
-                        endDate: '$endDate',
-                        startDate: '$startDate',
-                        status: '$status',
-                        createdAt: '$createdAt',
-                    }
-                },
-                { $sort: { name: 1 } }
-            ])
+            let week = []
+            if (activeSeason) {
+                week = await Week.aggregate([
+                    {
+                        $match: { seasonId: mongoose.Types.ObjectId(activeSeason._id), status: 'active' }
+                    },
+                    {
+                        $project: {
+                            _id: '$_id',
+                            name: '$name',
+                            endDate: '$endDate',
+                            startDate: '$startDate',
+                            status: '$status',
+                            createdAt: '$createdAt',
+                        }
+                    },
+                    { $sort: { name: 1 } }
+                ])
+            }
             return new Response(res, week)
         } catch (error) {
             ErrorHandler.sendError(res, error)
@@ -37,100 +40,105 @@ class WeeksController {
 
     static async getWeekswithMatches(req, res) {
         try {
-            let activeSeason = await Season.find({ leagueId: mongoose.Types.ObjectId(req.query.leagueId), status: 'active' })
-            let week = await Week.aggregate([
-                {
-                    $match: { seasonId: mongoose.Types.ObjectId(activeSeason[0]._id), status: { $in: ['active', 'completed'] } }
-                },
-                {
-                    $lookup: {
-                        from: 'matches',
-                        localField: '_id',
-                        foreignField: 'weekId',
-                        as: 'match'
-                    }
-                },
-                { $unwind: { path: "$match", preserveNullAndEmptyArrays: false } },
+            let activeSeason = await Season.findOne({ leagueId: mongoose.Types.ObjectId(req.query.leagueId), status: 'active' })
+            console.log(activeSeason)
 
-                {
-                    $lookup: {
-                        from: 'teams',
-                        localField: 'match.team1Id',
-                        foreignField: '_id',
-                        as: 'team1'
-                    }
-                }, {
-                    $lookup: {
-                        from: 'teams',
-                        localField: 'match.team2Id',
-                        foreignField: '_id',
-                        as: 'team2'
-                    }
-                },
-                { $unwind: { path: "$team1", preserveNullAndEmptyArrays: true } },
-                { $unwind: { path: "$team2", preserveNullAndEmptyArrays: true } },
-                {
-                    $lookup:
+            let week = []
+            if (activeSeason) {
+                week = await Week.aggregate([
                     {
-                        from: "predictions",
-                        let: { matchId: "$match._id", userId: mongoose.Types.ObjectId(req.query.userId) },
-                        pipeline: [
-                            {
-                                $match: {
-                                    $expr: {
-                                        $and: [
-                                            { $eq: ["$matchId", "$$matchId"] },
-                                            { $eq: ["$userId", "$$userId"] }
-                                        ]
-                                    }
-                                }
-                            },
-                        ],
-                        as: "prediction"
-                    }
-                },
-                { $unwind: { path: "$prediction", preserveNullAndEmptyArrays: true } },
+                        $match: { seasonId: mongoose.Types.ObjectId(activeSeason._id), status: { $in: ['active', 'completed'] } }
+                    },
+                    {
+                        $lookup: {
+                            from: 'matches',
+                            localField: '_id',
+                            foreignField: 'weekId',
+                            as: 'match'
+                        }
+                    },
+                    { $unwind: { path: "$match", preserveNullAndEmptyArrays: false } },
 
-                {
-                    $group: {
-                        _id: '$_id',
-                        name: { "$first": "$name" },
-                        endDate: { "$first": "$endDate" },
-                        startDate: { "$first": "$startDate" },
-                        status: { "$first": "$status" },
-                        createdAt: { "$first": "$createdAt" },
-                        checkweekstatus: { "$first": "noncurrent" },
-                        matches: {
-                            $push: {
-                                _id: '$match._id',
-                                date: '$match.date',
-                                time: '$match.time',
-                                team1result: '$match.team1result',
-                                team2result: '$match.team2result',
-                                status: '$match.status',
-                                points: '$prediction.points',
-                                team1: {
-                                    _id: '$team1._id',
-                                    name: '$team1.name',
-                                    image: { $concat: [config.LIVE_PATH, '$team1.image'] },
-                                    shortname: '$team1.shortname',
-                                    stadium: '$team1.stadium',
-                                    score: '$prediction.team1score',
+                    {
+                        $lookup: {
+                            from: 'teams',
+                            localField: 'match.team1Id',
+                            foreignField: '_id',
+                            as: 'team1'
+                        }
+                    }, {
+                        $lookup: {
+                            from: 'teams',
+                            localField: 'match.team2Id',
+                            foreignField: '_id',
+                            as: 'team2'
+                        }
+                    },
+                    { $unwind: { path: "$team1", preserveNullAndEmptyArrays: true } },
+                    { $unwind: { path: "$team2", preserveNullAndEmptyArrays: true } },
+                    {
+                        $lookup:
+                        {
+                            from: "predictions",
+                            let: { matchId: "$match._id", userId: mongoose.Types.ObjectId(req.query.userId) },
+                            pipeline: [
+                                {
+                                    $match: {
+                                        $expr: {
+                                            $and: [
+                                                { $eq: ["$matchId", "$$matchId"] },
+                                                { $eq: ["$userId", "$$userId"] }
+                                            ]
+                                        }
+                                    }
                                 },
-                                team2: {
-                                    _id: '$team2._id',
-                                    name: '$team2.name',
-                                    image: { $concat: [config.LIVE_PATH, '$team2.image'] },
-                                    shortname: '$team2.shortname',
-                                    stadium: '$team2.stadium',
-                                    score: '$prediction.team2score',
+                            ],
+                            as: "prediction"
+                        }
+                    },
+                    { $unwind: { path: "$prediction", preserveNullAndEmptyArrays: true } },
+
+                    {
+                        $group: {
+                            _id: '$_id',
+                            name: { "$first": "$name" },
+                            endDate: { "$first": "$endDate" },
+                            startDate: { "$first": "$startDate" },
+                            status: { "$first": "$status" },
+                            createdAt: { "$first": "$createdAt" },
+                            checkweekstatus: { "$first": "noncurrent" },
+                            matches: {
+                                $push: {
+                                    _id: '$match._id',
+                                    date: '$match.date',
+                                    time: '$match.time',
+                                    team1result: '$match.team1result',
+                                    team2result: '$match.team2result',
+                                    status: '$match.status',
+                                    points: '$prediction.points',
+                                    team1: {
+                                        _id: '$team1._id',
+                                        name: '$team1.name',
+                                        image: { $concat: [config.LIVE_PATH, '$team1.image'] },
+                                        shortname: '$team1.shortname',
+                                        stadium: '$team1.stadium',
+                                        score: '$prediction.team1score',
+                                    },
+                                    team2: {
+                                        _id: '$team2._id',
+                                        name: '$team2.name',
+                                        image: { $concat: [config.LIVE_PATH, '$team2.image'] },
+                                        shortname: '$team2.shortname',
+                                        stadium: '$team2.stadium',
+                                        score: '$prediction.team2score',
+                                    }
                                 }
                             }
                         }
-                    }
-                },
-                { $sort: { name: 1 } }
-            ])
+                    },
+                    { $sort: { name: 1 } }
+                ])
+            }
             return new Response(res, week)
         } catch (error) {
             ErrorHandler.sendError(res, error)
@@ -140,24 +148,27 @@ class WeeksController {
     static async getWeekbyCurrentDate(req, res) {
         try {
             console.log(req.query.leagueId)
-            let activeSeason = await Season.find({ leagueId: mongoose.Types.ObjectId(req.query.leagueId), status: 'active' })
-            console.log('activeSeason', activeSeason)
+            let activeSeason = await Season.findOne({ leagueId: mongoose.Types.ObjectId(req.query.leagueId), status: 'active' })
+            console.log(activeSeason)
 
-            let week = await Week.aggregate([
-                {
-                    $match: { startDate: { $lt: req.query.date }, endDate: { $gt: req.query.date }, seasonId: mongoose.Types.ObjectId(activeSeason[0]._id), status: 'active' }
-                },
-                {
-                    $project: {
-                        _id: '$_id',
-                        name: '$name',
-                        endDate: '$endDate',
-                        startDate: '$startDate',
-                        status: '$status',
-                        createdAt: '$createdAt',
-                    }
-                },
-            ])
+            let week = []
+            if (activeSeason) {
+                week = await Week.aggregate([
+                    {
+                        $match: { startDate: { $lt: req.query.date }, endDate: { $gt: req.query.date }, seasonId: mongoose.Types.ObjectId(activeSeason._id), status: 'active' }
+                    },
+                    {
+                        $project: {
+                            _id: '$_id',
+                            name: '$name',
+                            endDate: '$endDate',
+                            startDate: '$startDate',
+                            status: '$status',
+                            createdAt: '$createdAt',
+                        }
+                    },
+                ])
+            }
             return new Response(res, week)
         } catch (error) {
             ErrorHandler.sendError(res, error)
@@ -167,6 +178,8 @@ class WeeksController {
     static async addWeek(req, res) {
         try {
             let week = new Week({
+                leagueId: req.body.leagueId,
+                seasonId: req.body.seasonId,
                 name: req.body.name,
                 startDate: new Date(req.body.startDate).getTime(),
                 endDate: new Date(req.body.endDate).getTime(),

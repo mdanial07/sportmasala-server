@@ -12,13 +12,13 @@ const config = require('./../config')
 class DashboardController {
     static async getWeeklyWinner(req, res) {
         try {
-            let week = await Week.find({ status: 'completed' }).sort({ createdAt: -1 }).limit(1)
-            let activeSeason = await Season.find({ leagueId: mongoose.Types.ObjectId(req.query.leagueId), status: 'active' })
+            let week = await Week.findOne({ status: 'completed' }).sort({ createdAt: -1 }).limit(1)
+            let activeSeason = await Season.findOne({ leagueId: mongoose.Types.ObjectId(req.query.leagueId), status: 'active' })
 
-            if (week.length > 0) {
+            if (week && activeSeason) {
                 let Winners = await Prediction.aggregate([
                     {
-                        $match: { weekId: mongoose.Types.ObjectId(week[0]._id), seasonId: mongoose.Types.ObjectId(activeSeason[0]._id), }
+                        $match: { weekId: mongoose.Types.ObjectId(week._id), seasonId: mongoose.Types.ObjectId(activeSeason._id), }
                     },
                     {
                         $lookup: {
@@ -86,25 +86,29 @@ class DashboardController {
     static async getUserWidgetsPoints(req, res) {
         try {
             console.log(req.query.userId)
-            let week = await Week.find({ status: 'completed' }).sort({ createdAt: -1 }).limit(1)
-            let activeSeason = await Season.find({ leagueId: mongoose.Types.ObjectId(req.query.leagueId), status: 'active' })
-
-            let UserYearlyPoints = await Prediction.aggregate([
-                {
-                    $match: { userId: mongoose.Types.ObjectId(req.query.userId), seasonId: mongoose.Types.ObjectId(activeSeason[0]._id) }
-                }, {
-                    $group: {
-                        _id: '$userId',
-                        total: { $sum: '$points' },
-                    }
-                },
-            ])
+            let week = await Week.findOne({ status: 'completed' }).sort({ createdAt: -1 }).limit(1)
+            let activeSeason = await Season.findOne({ leagueId: mongoose.Types.ObjectId(req.query.leagueId), status: 'active' })
+            console.log(week)
+            console.log(activeSeason)
+            let UserYearlyPoints = []
+            if (activeSeason) {
+                UserYearlyPoints = await Prediction.aggregate([
+                    {
+                        $match: { userId: mongoose.Types.ObjectId(req.query.userId), seasonId: mongoose.Types.ObjectId(activeSeason._id) }
+                    }, {
+                        $group: {
+                            _id: '$userId',
+                            total: { $sum: '$points' },
+                        }
+                    },
+                ])
+            }
             let UserWeeklyPoints = [];
-            if (week.length > 0) {
+            if (week && activeSeason) {
                 UserWeeklyPoints = await Prediction.aggregate([
                     {
                         $match: {
-                            userId: mongoose.Types.ObjectId(req.query.userId), seasonId: mongoose.Types.ObjectId(activeSeason[0]._id), weekId: mongoose.Types.ObjectId(week[0]._id)
+                            userId: mongoose.Types.ObjectId(req.query.userId), seasonId: mongoose.Types.ObjectId(activeSeason._id), weekId: mongoose.Types.ObjectId(week._id)
                         }
                     },
                     {

@@ -1,6 +1,6 @@
 {
-    "LOCAL_PATH": "http://localhost:4040",
-    "LIVE_PATH": "https://sports.jenzo.store",
+    "LIVE_PATH": "http://localhost:4040",
+    "LOCAL_PATH": "https://sports.jenzo.store",
     "MONGO_CONNECTION": "mongodb+srv://sportsmasala:uBaemUyQdGGKH9oK@sports.osxbs.mongodb.net/live",
     "SECRET_TOKEN": "6c5c1681-b316-4f6b-8c57-799d28f3e7ec-286843d9-81a9-4882-9daf-492ca471753d"
 }

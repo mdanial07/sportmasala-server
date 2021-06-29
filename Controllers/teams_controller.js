@@ -13,57 +13,58 @@ class TeamsController {
     static async getTeams(req, res) {
         try {
             console.log('req.query', req.query)
-            let activeSeason = await Season.find({ leagueId: mongoose.Types.ObjectId(req.query.leagueId), status: 'active' })
-            console.log('activeSeason', activeSeason)
-
-            let Teams = await Team.aggregate([
-                {
-                    $match: { seasonId: mongoose.Types.ObjectId(activeSeason[0]._id) }
-                }, {
-                    $lookup: {
-                        from: 'seasons',
-                        localField: 'seasonId',
-                        foreignField: '_id',
-                        as: 'season'
-                    }
-                },
-                {
-                    $lookup: {
-                        from: 'teamstats',
-                        localField: '_id',
-                        foreignField: 'teamId',
-                        as: 'stats'
-                    }
-                },
-                { $unwind: { path: "$season", preserveNullAndEmptyArrays: true } },
-                { $unwind: { path: "$stats", preserveNullAndEmptyArrays: true } },
-                {
-                    $project: {
-                        _id: '$_id',
-                        name: '$name',
-                        image: { $concat: [config.LIVE_PATH, '$image'] },
-                        shortname: '$shortname',
-                        stadium: '$stadium',
-                        capacity: '$capacity',
-                        status: '$status',
-                        createdAt: '$createdAt',
-                        stats: {
-                            points: '$stats.points',
-                            played: '$stats.played',
-                            won: '$stats.won',
-                            lost: '$stats.lost',
-                            draw: '$stats.draw',
-                        },
-                        season: {
-                            name: '$season.name',
-                            startDate: '$season.startDate',
-                            endDate: '$season.endDate',
+            let activeSeason = await Season.findOne({ leagueId: mongoose.Types.ObjectId(req.query.leagueId), status: 'active' })
+            let Teams = []
+            if (activeSeason) {
+                Teams = await Team.aggregate([
+                    {
+                        $match: { seasonId: mongoose.Types.ObjectId(activeSeason._id) }
+                    }, {
+                        $lookup: {
+                            from: 'seasons',
+                            localField: 'seasonId',
+                            foreignField: '_id',
+                            as: 'season'
                         }
-                    }
-                },
-                { $sort: { "stats.points": -1 } },
-                { $limit: 20 }
-            ])
+                    },
+                    {
+                        $lookup: {
+                            from: 'teamstats',
+                            localField: '_id',
+                            foreignField: 'teamId',
+                            as: 'stats'
+                        }
+                    },
+                    { $unwind: { path: "$season", preserveNullAndEmptyArrays: true } },
+                    { $unwind: { path: "$stats", preserveNullAndEmptyArrays: true } },
+                    {
+                        $project: {
+                            _id: '$_id',
+                            name: '$name',
+                            image: { $concat: [config.LIVE_PATH, '$image'] },
+                            shortname: '$shortname',
+                            stadium: '$stadium',
+                            capacity: '$capacity',
+                            status: '$status',
+                            createdAt: '$createdAt',
+                            stats: {
+                                points: '$stats.points',
+                                played: '$stats.played',
+                                won: '$stats.won',
+                                lost: '$stats.lost',
+                                draw: '$stats.draw',
+                            },
+                            season: {
+                                name: '$season.name',
+                                startDate: '$season.startDate',
+                                endDate: '$season.endDate',
+                            }
+                        }
+                    },
+                    { $sort: { "stats.points": -1 } },
+                    { $limit: 20 }
+                ])
+            }
             return new Response(res, Teams)
         } catch (error) {
             ErrorHandler.sendError(res, error)

@@ -2,11 +2,15 @@
 
 const { Router } = require('express')
 const { AuthenticationController } = require('../Controllers/authentication_controller');
+const { ActiveLeagueToursController } = require('../Controllers/active_tours_leagues_controller');
 const { LeaguesController } = require('../Controllers/league_controller');
+const { CricketTeamsController } = require('../Controllers/cricketteams_controller');
 const { SeasonsController } = require('../Controllers/seasons_controller');
 const { TeamsController } = require('../Controllers/teams_controller');
 const { WeeksController } = require('../Controllers/weeks_controller');
 const { MatchesController } = require('../Controllers/matches_controller');
+const { CricketMatchsController } = require('../Controllers/cricketmatches_controller');
+const { SeriesController } = require('../Controllers/series_controller');
 const { PredictionsController } = require('../Controllers/predictions_controller');
 const { DashboardController } = require('../Controllers/dashboard_controller');
 const { SeedsController } = require('../Controllers/seeds_controller');
@@ -22,11 +26,20 @@ router.get('/authentication/auth', AuthenticationController.checkLogin)
 router.post('/authentication/verify', AuthenticationController.profileVerification)
 router.post('/authentication/resetpassword', requireAuth, AuthenticationController.resetPassword)
 
+//Active Leagues & Tours
+router.get('/active-leagues-tours', ActiveLeagueToursController.getLeagueTours)
+
 //Leagues
 router.get('/leagues', LeaguesController.getLeagues)
 router.post('/league', LeaguesController.addLeague)
 router.put('/league', requireAuth, LeaguesController.editLeague)
 router.delete('/league', requireAuth, LeaguesController.deleteLeague)
+
+//Cricket Teams
+router.get('/cricket-teams', CricketTeamsController.getCricketTeams)
+router.post('/cricket-team', CricketTeamsController.addCricketTeam)
+router.put('/cricket-team', requireAuth, CricketTeamsController.editTeam)
+router.delete('/cricket-team', requireAuth, CricketTeamsController.deleteTeam)
 
 //Seasons
 router.get('/seasons', SeasonsController.getSeasons)
@@ -41,20 +54,32 @@ router.post('/teamstats', TeamsController.addTeamStats)
 router.put('/team', requireAuth, TeamsController.editTeam)
 router.delete('/team', requireAuth, TeamsController.deleteTeam)
 
-//Weeks
-router.get('/weeks', requireAuth, WeeksController.getWeeks)
-router.get('/weekbydate', requireAuth, WeeksController.getWeekbyCurrentDate)
-router.get('/weekswithmatches', requireAuth, WeeksController.getWeekswithMatches)
-router.post('/week', requireAuth, WeeksController.addWeek)
-router.put('/week', requireAuth, WeeksController.editWeek)
-router.delete('/week', requireAuth, WeeksController.deleteWeek)
-
 //Matches
 router.get('/matches', requireAuth, MatchesController.getMatches)
 router.post('/match', requireAuth, MatchesController.addMatch)
 router.put('/matchresult', MatchesController.updateMatchwithResult)
 router.put('/match', requireAuth, MatchesController.editMatch)
 router.delete('/match', requireAuth, MatchesController.deleteMatch)
+
+//Series
+router.get('/series', requireAuth, SeriesController.getSeries)
+router.post('/series', SeriesController.addSeries)
+router.put('/series', requireAuth, SeriesController.editSeries)
+router.delete('/series', requireAuth, SeriesController.deleteSeries)
+
+//Cricket Matches
+router.get('/cricketmatches', requireAuth, CricketMatchsController.getCricketMatches)
+router.post('/cricketmatch', CricketMatchsController.addCricketMatch)
+router.put('/cricketmatch', requireAuth, CricketMatchsController.editCricketMatch)
+router.delete('/cricketmatch', requireAuth, CricketMatchsController.deleteCricketMatch)
+
+// Weeks
+router.get('/weeks', requireAuth, WeeksController.getWeeks)
+router.get('/weekbydate', requireAuth, WeeksController.getWeekbyCurrentDate)
+router.get('/weekswithmatches', requireAuth, WeeksController.getWeekswithMatches)
+router.post('/week', requireAuth, WeeksController.addWeek)
+router.put('/week', requireAuth, WeeksController.editWeek)
+router.delete('/week', requireAuth, WeeksController.deleteWeek)
 
 //Predictions
 router.get('/predictions', requireAuth, PredictionsController.getPredictions)

@@ -24,7 +24,7 @@ var corsOptionsDelegate = function (req, callback) {
     if (whitelist.indexOf(req.header('Origin')) !== -1) {
         corsOptions = { origin: true, credentials: true }
     } else {
-        corsOptions = { origin: false, credentials: true }
+        corsOptions = { origin: false, credentials: true }      
     }
     callback(null, corsOptions)
 }
@@ -43,6 +43,7 @@ app.use('/api', routes)
 var whitelist = [
     'http://localhost:4401',
     'http://localhost:4410',
+    'http://localhost:8100',
     'https://sports.jenzo.store',
 ]
 

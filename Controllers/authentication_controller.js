@@ -67,7 +67,8 @@ class AuthenticationController {
                                 email: user.email,
                                 firstname: user.firstname,
                                 lastname: user.lastname,
-                                leagueId: leagueExist._id
+                                leagueId: leagueExist._id,
+                                type: leagueExist.type
                             }
                             return new Response(res, obj)
                         }
