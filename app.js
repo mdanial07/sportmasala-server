@@ -44,7 +44,7 @@ var whitelist = [
     'http://localhost:4401',
     'http://localhost:4410',
     'http://localhost:8100',
-    'https://sports.jenzo.store',
+    'https://sportsmasala.com.pk',
 ]
 
 app.use('/*', express.static(path.join(__dirname, 'public')));
