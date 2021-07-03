@@ -32,6 +32,31 @@ var matches = new Schema({
         type: String,
         required: true,
     },
+    firstinningscore: {
+        type: Number,
+        default: null,
+    },
+    manofthematch: {
+        type: String,
+        default: null,
+    },
+    mostwickets: {
+        type: String,
+        default: null,
+    },
+    mostruns: {
+        type: String,
+        default: null,
+    },
+    result: {
+        type: String,
+        default: null,
+    },
+    points: {
+        type: Number,
+        required: false,
+        default: 0,
+    },
     status: {
         type: String,
         default: 'pending'

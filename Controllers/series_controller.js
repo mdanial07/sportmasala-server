@@ -32,6 +32,132 @@ class SeriesController {
         }
     }
 
+    static async getSerieswithMatches(req, res) {
+        try {
+            console.log('req.query.leagueId', req.query)
+
+            let series = await Series.aggregate([
+                {
+                    $match: { leagueId: mongoose.Types.ObjectId(req.query.leagueId), status: { $in: ['active', 'completed'] } }
+                },
+                {
+                    $lookup: {
+                        from: 'cricketmatches',
+                        localField: '_id',
+                        foreignField: 'seriesId',
+                        as: 'match'
+                    }
+                },
+                { $unwind: { path: "$match", preserveNullAndEmptyArrays: false } },
+
+                {
+                    $lookup: {
+                        from: 'players',
+                        localField: '_id',
+                        foreignField: 'match.team1Id',
+                        as: 'team1players'
+                    }
+                }, {
+                    $lookup: {
+                        from: 'players',
+                        localField: 'match.team2Id',
+                        foreignField: '_id',
+                        as: 'team2players'
+                    }
+                },
+                { $unwind: { path: "$team1players", preserveNullAndEmptyArrays: true } },
+                { $unwind: { path: "$team2players", preserveNullAndEmptyArrays: true } },
+
+                {
+                    $lookup: {
+                        from: 'cricketteams',
+                        localField: 'match.team1Id',
+                        foreignField: '_id',
+                        as: 'team1'
+                    }
+                }, {
+                    $lookup: {
+                        from: 'cricketteams',
+                        localField: 'match.team2Id',
+                        foreignField: '_id',
+                        as: 'team2'
+                    }
+                },
+                { $unwind: { path: "$team1", preserveNullAndEmptyArrays: true } },
+                { $unwind: { path: "$team2", preserveNullAndEmptyArrays: true } },
+                // {
+                //     $lookup:
+                //     {
+                //         from: "predictions",
+                //         let: { matchId: "$match._id", userId: mongoose.Types.ObjectId(req.query.userId) },
+                //         pipeline: [
+                //             {
+                //                 $match: {
+                //                     $expr: {
+                //                         $and: [
+                //                             { $eq: ["$matchId", "$$matchId"] },
+                //                             { $eq: ["$userId", "$$userId"] }
+                //                         ]
+                //                     }
+                //                 }
+                //             },
+                //         ],
+                //         as: "prediction"
+                //     }
+                // },
+                // { $unwind: { path: "$prediction", preserveNullAndEmptyArrays: true } },
+
+                {
+                    $group: {
+                        _id: '$_id',
+                        name: { "$first": "$name" },
+                        endDate: { "$first": "$endDate" },
+                        startDate: { "$first": "$startDate" },
+                        status: { "$first": "$status" },
+                        matches: {
+                            $push: {
+                                _id: '$match._id',
+                                date: '$match.date',
+                                time: '$match.time',
+                                status: '$match.status',
+                                result: '$match.result',
+                                points: '$match.points',
+                                mostruns: '$match.mostruns',
+                                mostwickets: '$match.mostwickets',
+                                manofthematch: '$match.manofthematch',
+                                firstinningscore: '$match.firstinningscore',
+                                team1: {
+                                    _id: '$team1._id',
+                                    name: '$team1.name',
+                                    image: { $concat: [config.LIVE_PATH, '$team1.image'] },
+                                    shortname: '$team1.shortname',
+                                },
+                                team2: {
+                                    _id: '$team2._id',
+                                    name: '$team2.name',
+                                    image: { $concat: [config.LIVE_PATH, '$team2.image'] },
+                                    shortname: '$team2.shortname',
+                                },
+                                prediction: {
+                                    result: '$prediction.result',
+                                    points: '$prediction.points',
+                                    mostruns: '$prediction.mostruns',
+                                    mostwickets: '$prediction.mostwickets',
+                                    manofthematch: '$prediction.manofthematch',
+                                    firstinningscore: '$prediction.firstinningscore',
+                                }
+                            }
+                        }
+                    }
+                },
+                { $sort: { name: 1 } }
+            ])
+            return new Response(res, series)
+        } catch (error) {
+            ErrorHandler.sendError(res, error)
+        }
+    }
+
     static async addSeries(req, res) {
         try {
             let series = new Series({

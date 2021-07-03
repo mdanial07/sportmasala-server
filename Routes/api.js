@@ -14,6 +14,7 @@ const { SeriesController } = require('../Controllers/series_controller');
 const { PredictionsController } = require('../Controllers/predictions_controller');
 const { DashboardController } = require('../Controllers/dashboard_controller');
 const { SeedsController } = require('../Controllers/seeds_controller');
+const { CricketPlayersController } = require('../Controllers/players_controller');
 
 const { requireAuth } = require('../Passport/passport');
 
@@ -41,6 +42,10 @@ router.post('/cricket-team', CricketTeamsController.addCricketTeam)
 router.put('/cricket-team', requireAuth, CricketTeamsController.editTeam)
 router.delete('/cricket-team', requireAuth, CricketTeamsController.deleteTeam)
 
+//Cricket Players
+router.get('/players', CricketPlayersController.getCricketPlayers)
+router.post('/player', CricketPlayersController.addCricketPlayer)
+
 //Seasons
 router.get('/seasons', SeasonsController.getSeasons)
 router.post('/season', SeasonsController.addSeason)
@@ -63,6 +68,7 @@ router.delete('/match', requireAuth, MatchesController.deleteMatch)
 
 //Series
 router.get('/series', requireAuth, SeriesController.getSeries)
+router.get('/serieswithmatches', requireAuth, SeriesController.getSerieswithMatches)
 router.post('/series', SeriesController.addSeries)
 router.put('/series', requireAuth, SeriesController.editSeries)
 router.delete('/series', requireAuth, SeriesController.deleteSeries)
