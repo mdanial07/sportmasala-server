@@ -15,6 +15,7 @@ const { PredictionsController } = require('../Controllers/predictions_controller
 const { DashboardController } = require('../Controllers/dashboard_controller');
 const { SeedsController } = require('../Controllers/seeds_controller');
 const { CricketPlayersController } = require('../Controllers/players_controller');
+const { CricketPredictionsController } = require('../Controllers/cricketpredictions_controller');
 
 const { requireAuth } = require('../Passport/passport');
 
@@ -76,8 +77,15 @@ router.delete('/series', requireAuth, SeriesController.deleteSeries)
 //Cricket Matches
 router.get('/cricketmatches', requireAuth, CricketMatchsController.getCricketMatches)
 router.post('/cricketmatch', CricketMatchsController.addCricketMatch)
+router.put('/cricketmatchresult', CricketMatchsController.updateMatchwithResult)
 router.put('/cricketmatch', requireAuth, CricketMatchsController.editCricketMatch)
 router.delete('/cricketmatch', requireAuth, CricketMatchsController.deleteCricketMatch)
+
+//Cricket Predictions
+router.get('/cricketpredictions', requireAuth, CricketPredictionsController.getCricketPredictions)
+router.post('/cricketprediction', requireAuth, CricketPredictionsController.addCricketPrediction)
+router.put('/cricketprediction', requireAuth, CricketPredictionsController.editCricketPrediction)
+router.delete('/cricketprediction', requireAuth, CricketPredictionsController.deleteCricketPrediction)
 
 // Weeks
 router.get('/weeks', requireAuth, WeeksController.getWeeks)
@@ -95,6 +103,7 @@ router.delete('/prediction', requireAuth, PredictionsController.deletePrediction
 
 //Dashboard
 router.get('/weeklywinner', requireAuth, DashboardController.getWeeklyWinner)
+router.get('/serieswinner', requireAuth, DashboardController.getSeriesWinner)
 router.get('/yearlywinner', requireAuth, DashboardController.getYearlyWinner)
 router.get('/user-widgets', requireAuth, DashboardController.getUserWidgetsPoints)
 

@@ -10,8 +10,8 @@ class CricketPlayersController {
     static async getCricketPlayers(req, res) {
         try {
             console.log(req.query)
-            let query = req.query.type != ''
-                ? { type: req.query.type, teamId: { $in: [mongoose.Types.ObjectId(req.query.team1Id), mongoose.Types.ObjectId(req.query.team2Id)] } }
+            let query = JSON.parse(req.query.type).length > 0
+                ? { type: { $in: JSON.parse(req.query.type) }, teamId: { $in: [mongoose.Types.ObjectId(req.query.team1Id), mongoose.Types.ObjectId(req.query.team2Id)] } }
                 : { teamId: { $in: [mongoose.Types.ObjectId(req.query.team1Id), mongoose.Types.ObjectId(req.query.team2Id)] } }
 
             let player = await CricketPlayer.aggregate([
@@ -42,6 +42,7 @@ class CricketPlayersController {
                         },
                     }
                 },
+                { $sort: { name: 1 } }
             ])
             return new Response(res, player)
         } catch (error) {

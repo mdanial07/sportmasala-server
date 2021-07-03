@@ -3,11 +3,13 @@
 var mongoose = require('mongoose');
 const { Series } = require('../Schema/Series')
 const { CricketMatch } = require('../Schema/CricketMatches')
+const { CricketPrediction } = require('../Schema/CricketPrediction')
 const { ErrorHandler } = require('../utils/ErrorHandler');
 const { Response } = require('../utils/Response');
 const config = require('./../config')
 
 class CricketMatchsController {
+
     static async getCricketMatches(req, res) {
         try {
             console.log(req.query)
@@ -105,6 +107,63 @@ class CricketMatchsController {
             })
             await cricketMatch.save()
             return new Response(res, { success: true }, 'Added Successfully')
+        } catch (error) {
+            ErrorHandler.sendError(res, error)
+        }
+    }
+
+    static async updateMatchwithResult(req, res) {
+        console.log(req.body)
+        try {
+            let result = req.body.result
+            let mostruns = req.body.mostruns
+            let mostwickets = req.body.mostwickets
+            let manofthematch = req.body.manofthematch
+            let firstinningscore = req.body.firstinningscore
+
+            let matchExist = await CricketMatch.findOne({ _id: mongoose.Types.ObjectId(req.body._id) })
+            console.log(matchExist)
+
+            if (matchExist) {
+                let predictionExist = await CricketPrediction.find({ matchId: mongoose.Types.ObjectId(req.body._id) })
+                console.log(predictionExist)
+                if (predictionExist) {
+                    predictionExist.map(async predic => {
+                        let Score = 0;
+
+                        //Correct Result
+                        if (predic.user_result == result) {
+                            Score += 20;
+                        }
+
+                        //Most Runs
+                        if (predic.user_mostruns == mostruns) {
+                            Score += 20;
+                        }
+
+                        //Most Wickets
+                        if (predic.user_mostwickets == mostwickets) {
+                            Score += 20;
+                        }
+
+                        //Man of the Match
+                        if (predic.user_manofthematch == manofthematch) {
+                            Score += 20;
+                        }
+
+                        //First Inning score
+                        if (predic.user_firstinningscore == firstinningscore) {
+                            Score += 20;
+                        }
+                        console.log('Score', Score)
+                        await CricketPrediction.findOneAndUpdate({ _id: predic._id }, { $set: { points: Score, status: 'completed' } })
+                    })
+                    await CricketMatch.findOneAndUpdate({ _id: matchExist._id }, { $set: { result: req.body.result, mostruns: req.body.mostruns, mostwickets: req.body.mostwickets, manofthematch: req.body.manofthematch, firstinningscore: req.body.firstinningscore, status: 'completed' } })
+
+                }
+            }
+
+            return new Response(res, { success: true }, 'Update Successfully')
         } catch (error) {
             ErrorHandler.sendError(res, error)
         }

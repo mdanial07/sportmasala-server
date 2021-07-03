@@ -2,9 +2,11 @@
 
 var mongoose = require('mongoose');
 const { Team } = require('../Schema/Teams')
+const { Series } = require('../Schema/Series')
 const { Week } = require('../Schema/Weeks')
 const { Season } = require('../Schema/Seasons')
 const { Prediction } = require('../Schema/Predictions')
+const { CricketPrediction } = require('../Schema/CricketPrediction')
 const { ErrorHandler } = require('../utils/ErrorHandler');
 const { Response } = require('../utils/Response');
 const config = require('./../config')
@@ -19,6 +21,48 @@ class DashboardController {
                 let Winners = await Prediction.aggregate([
                     {
                         $match: { weekId: mongoose.Types.ObjectId(week._id), seasonId: mongoose.Types.ObjectId(activeSeason._id), }
+                    },
+                    {
+                        $lookup: {
+                            from: 'users',
+                            localField: 'userId',
+                            foreignField: '_id',
+                            as: 'user'
+                        }
+                    },
+                    { $unwind: { path: "$user", preserveNullAndEmptyArrays: true } },
+                    {
+                        $group: {
+                            _id: '$userId',
+                            total: { $sum: '$points' },
+                            matchId: { "$first": "$matchId" },
+                            firstname: { "$first": "$user.firstname" },
+                            lastname: { "$first": "$user.lastname" },
+                        }
+                    },
+
+                    { $sort: { total: -1 } },
+                    { $limit: 3 }
+                ])
+                return new Response(res, Winners)
+            } else {
+                return new Response(res, [])
+            }
+        } catch (error) {
+            ErrorHandler.sendError(res, error)
+        }
+    }
+
+    static async getSeriesWinner(req, res) {
+        try {
+
+            let series = await Series.findOne({ status: 'active' }).sort({ createdAt: -1 }).limit(1)
+            console.log(series)
+
+            if (series) {
+                let Winners = await CricketPrediction.aggregate([
+                    {
+                        $match: { seriesId: mongoose.Types.ObjectId(series._id) }
                     },
                     {
                         $lookup: {

@@ -85,27 +85,27 @@ class SeriesController {
                 },
                 { $unwind: { path: "$team1", preserveNullAndEmptyArrays: true } },
                 { $unwind: { path: "$team2", preserveNullAndEmptyArrays: true } },
-                // {
-                //     $lookup:
-                //     {
-                //         from: "predictions",
-                //         let: { matchId: "$match._id", userId: mongoose.Types.ObjectId(req.query.userId) },
-                //         pipeline: [
-                //             {
-                //                 $match: {
-                //                     $expr: {
-                //                         $and: [
-                //                             { $eq: ["$matchId", "$$matchId"] },
-                //                             { $eq: ["$userId", "$$userId"] }
-                //                         ]
-                //                     }
-                //                 }
-                //             },
-                //         ],
-                //         as: "prediction"
-                //     }
-                // },
-                // { $unwind: { path: "$prediction", preserveNullAndEmptyArrays: true } },
+                {
+                    $lookup:
+                    {
+                        from: "cricketpredictions",
+                        let: { matchId: "$match._id", userId: mongoose.Types.ObjectId(req.query.userId) },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            { $eq: ["$matchId", "$$matchId"] },
+                                            { $eq: ["$userId", "$$userId"] }
+                                        ]
+                                    }
+                                }
+                            },
+                        ],
+                        as: "prediction"
+                    }
+                },
+                { $unwind: { path: "$prediction", preserveNullAndEmptyArrays: true } },
 
                 {
                     $group: {
@@ -139,12 +139,12 @@ class SeriesController {
                                     shortname: '$team2.shortname',
                                 },
                                 prediction: {
-                                    result: '$prediction.result',
                                     points: '$prediction.points',
-                                    mostruns: '$prediction.mostruns',
-                                    mostwickets: '$prediction.mostwickets',
-                                    manofthematch: '$prediction.manofthematch',
-                                    firstinningscore: '$prediction.firstinningscore',
+                                    user_result: '$prediction.user_result',
+                                    user_mostruns: '$prediction.user_mostruns',
+                                    user_mostwickets: '$prediction.user_mostwickets',
+                                    user_manofthematch: '$prediction.user_manofthematch',
+                                    user_firstinningscore: '$prediction.user_firstinningscore',
                                 }
                             }
                         }
