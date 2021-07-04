@@ -26,7 +26,8 @@ router.post('/authentication/signup', AuthenticationController.signUpWithCredent
 router.post('/authentication/login', AuthenticationController.loginWithCredentials)
 router.get('/authentication/auth', AuthenticationController.checkLogin)
 router.post('/authentication/verify', AuthenticationController.profileVerification)
-router.post('/authentication/resetpassword', requireAuth, AuthenticationController.resetPassword)
+router.post('/authentication/forgotpassword', AuthenticationController.requestPassword)
+router.post('/authentication/resetpassword', AuthenticationController.resetPassword)
 
 //Active Leagues & Tours
 router.get('/active-leagues-tours', ActiveLeagueToursController.getLeagueTours)

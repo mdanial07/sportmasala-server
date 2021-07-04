@@ -12,7 +12,7 @@ class MailSender {
     async sendMail(to, subject, html) {
         let transporter = await MailSender.prototype.createTransporter()
         let mailOptions = {
-            from: '"E-Booket" <ebooket1@gmail.com>',
+            from: '"Sportsmasala" <no-reply@sportsmasala.com.pk>',
             to: to,
             subject: subject,
             html: html
@@ -32,14 +32,11 @@ class MailSender {
         return new Promise((resolve, reject) => {
             nodemailer.createTestAccount((err, account) => {
                 let transporter = nodemailer.createTransport({
-                    // host: 'smtp.ethereal.email',
-                    // secure: false,
-                    service: 'Gmail',
-                    // host: 'smtp.gmail.com',
-                    // port: 587,
+                    host: 'sportsmasala.com.pk',
+                    port: 465,
                     auth: {
-                        user: 'ebooket1@gmail.com',
-                        pass: 'Bluewhale#123'
+                        user: 'no-reply@sportsmasala.com.pk',
+                        pass: '%GZf3J5NML.E'
                     }
                 })
                 if (err) { reject(err) } else resolve(transporter)

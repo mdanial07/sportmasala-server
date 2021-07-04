@@ -31,13 +31,13 @@ class AuthenticationController {
                         password: bcrypt.hashSync(req.body.password, 10)
                     })
                     await user.save()
-                    // try {
-                    //     let emailVerificationLink = `${config.LIVE_PATH}verify?token=${emailVerificationToken}&user=${user._id}`
-                    //     let html = await PromiseEjs.renderFile('./Email/signup.ejs', { user: user, emailVerificationLink: emailVerificationLink, token: emailVerificationToken })
-                    //     await mailSender.sendMail(user.email, 'Welcome!!!!', html)
-                    // } catch (error) {
-                    //     console.log(error)
-                    // }
+                    try {
+                        let emailVerificationLink = `${config.LIVE_PATH}/#/verify?token=${emailVerificationToken}&user=${user._id}`
+                        let html = await PromiseEjs.renderFile('./Email/signup.ejs', { user: user, emailVerificationLink: emailVerificationLink, token: emailVerificationToken })
+                        await mailSender.sendMail(user.email, 'Welcome!!!!', html)
+                    } catch (error) {
+                        console.log(error)
+                    }
                     let authToken = AuthMiddleware.createJWT(user, config.SECRET_TOKEN)
                     await User.findOneAndUpdate({ _id: user._id }, { $set: { authToken: authToken, password: bcrypt.hashSync(req.body.password, 10), token: emailVerificationToken } })
                     return new Response(res, { authToken: authToken })
@@ -116,13 +116,34 @@ class AuthenticationController {
         }
     }
 
+    static async requestPassword(req, res) {
+        console.log(req.body)
+        try {
+            let user = await User.findOne({ email: req.body.email })
+            if (user) {
+                let emailVerificationToken = uuidv4()
+                let emailVerificationLink = `${config.LIVE_PATH}/#/newpassword?t=${emailVerificationToken}`;
+                let html = await PromiseEjs.renderFile('./Email/resetpassword.ejs', { user: user, emailVerificationLink: emailVerificationLink })
+                try {
+                    await mailSender.sendMail(user.email, 'Sportsmasala | Password Reset', html)
+                } catch (error) {
+                    console.log(error)
+                }
+                await User.findOneAndUpdate({ _id: user._id }, { $set: { token: emailVerificationToken } })
+                return new Response(res, { success: true })
+            } else throw { code: 400, message: 'User not found!' }
+        } catch (error) {
+            ErrorHandler.sendError(res, error)
+        }
+    }
+
     static async resetPassword(req, res) {
         console.log(req.body)
         console.log(req.headers)
         try {
-            let user = await User.findOne({ authToken: req.headers.authorization })
+            let user = await User.findOne({ token: req.body.token })
             if (user) {
-                await User.findOneAndUpdate({ authToken: req.headers.authorization }, { $set: { password: bcrypt.hashSync(req.body.password, 10) } })
+                await User.findOneAndUpdate({ token: req.body.token }, { $set: { password: bcrypt.hashSync(req.body.password, 8), token: uuidv4() } })
                 return new Response(res, { success: true })
             } else throw { code: 401, message: 'Invalid token' }
         } catch (error) {
