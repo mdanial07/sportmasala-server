@@ -80,10 +80,11 @@ class DashboardController {
                             matchId: { "$first": "$matchId" },
                             firstname: { "$first": "$user.firstname" },
                             lastname: { "$first": "$user.lastname" },
+                            updatedAt: { "$first": "$updatedAt" },
                         }
                     },
 
-                    { $sort: { total: -1 } },
+                    { $sort: { total: -1, updatedAt: 1 } },
                     { $limit: 3 }
                 ])
                 return new Response(res, Winners)

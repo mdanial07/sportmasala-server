@@ -16,7 +16,7 @@ class CricketPlayersController {
 
             let player = await CricketPlayer.aggregate([
                 {
-                    $match: { ...query }
+                    $match: { ...query, status: 'active' }
                 }, {
                     $lookup: {
                         from: 'cricketteams',
