@@ -19,7 +19,7 @@ var player = new Schema({
     },
     status: {
         type: String,
-        default: 'pending'
+        default: 'active'
     },
 }, {
     timestamps: true

@@ -5,6 +5,7 @@ const bodyParser = require('body-parser')
 const cors = require('cors')
 const config = require('./config')
 const routes = require('./Routes/api');
+const admin_routes = require('./Routes/admin');
 
 const app = express()
 
@@ -39,6 +40,7 @@ app.use(bodyParser.json({ limit: '50mb' }));
 app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 
 app.use('/api', routes)
+app.use('/admin', admin_routes)
 
 var whitelist = [
     'http://localhost:4401',
